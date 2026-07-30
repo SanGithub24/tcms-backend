@@ -12,12 +12,10 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\CategoryController;
 
-// ==========================================
-// 1. TOURIST ROUTES
-// ==========================================
+
+// TOURIST Dash
 Route::group([], function () {
     
-    // Public Tourist Routes (High Security Throttle - 5 requests/min)
     Route::middleware('throttle:5,1')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
@@ -28,13 +26,11 @@ Route::group([], function () {
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     });
 
-    // Public General Routes
     Route::post('/contact-message', [ContactController::class, 'sendMessage']);
     Route::get('/notices', [NoticeController::class, 'getPublishedNotices']);
     Route::get('/public/reviews', [ReviewController::class, 'publicReviews']);
     Route::get('/categories', [CategoryController::class, 'index']);
 
-    // Protected Tourist Routes (Standard Throttle - 60 requests/min)
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::post('/submit-complaint', [ComplaintController::class, 'submitComplaint']);
         Route::post('/upload-evidence', [EvidenceController::class, 'uploadEvidence']);
@@ -54,18 +50,15 @@ Route::group([], function () {
     });
 });
 
-// ==========================================
-// 2. ADMIN ROUTES
-// ==========================================
+
+// ADMIN Dash
 Route::group([], function () {
 
-    // Admin Auth (High Security Throttle - 5 requests/min)
     Route::middleware('throttle:5,1')->group(function () {
         Route::post('/login-user', [UserController::class, 'loginUser']);
         Route::post('/register-user', [UserController::class, 'registerUser']);
     });
 
-    // Protected Admin Routes (Standard Throttle - 60 requests/min)
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::post('/assign-police', [AssignmentController::class, 'assignPolice']);
         Route::post('/remove-police-assignment', [AssignmentController::class, 'removePolice']);
@@ -96,12 +89,11 @@ Route::group([], function () {
     });
 });
 
-// ==========================================
-// 3. POLICE ROUTES
-// ==========================================
+
+// POLICE Dash
+
 Route::group([], function () {
 
-    // Protected Police Routes (Standard Throttle - 60 requests/min)
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::get('/police-dashboard/{userID}', [AssignmentController::class, 'policeDashboardStats']);
         Route::get('/assigned-complaints/{userID}', [AssignmentController::class, 'getAssignedComplaints']);
@@ -122,9 +114,8 @@ Route::group([], function () {
     });
 });
 
-// ==========================================
-// 4. SHARED ROUTES (Admin & Police)
-// ==========================================
+// SHARED ROUTES (Admin & Police)
+
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('/all-complaints', [ComplaintController::class, 'getAllComplaints']);
 });
