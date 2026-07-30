@@ -213,6 +213,13 @@ class ComplaintController extends Controller
             ], 404);
         }
 
+        // Security Patch: Verify Ownership (IDOR Protection)
+        if ($complaint->touristID !== \Illuminate\Support\Facades\Auth::id()) {
+            return response()->json([
+                'message' => 'Unauthorized action. You can only modify your own complaints.'
+            ], 403);
+        }
+
         if (Carbon::parse($complaint->created_at)->addMinutes(15)->isPast()) {
             return response()->json([
                 'message' => 'The 15-minute editing period for this complaint has expired.'
@@ -439,6 +446,13 @@ class ComplaintController extends Controller
             ], 404);
         }
 
+        // Security Patch: Verify Ownership (IDOR Protection)
+        if ($complaint->touristID !== \Illuminate\Support\Facades\Auth::id()) {
+            return response()->json([
+                'message' => 'Unauthorized action. You can only delete your own complaints.'
+            ], 403);
+        }
+
         // Tourist can delete the complaint only within 15 minutes
         // after submission, even if it was automatically assigned.
         if (Carbon::parse($complaint->created_at)->addMinutes(15)->isPast()) {
@@ -629,7 +643,7 @@ class ComplaintController extends Controller
 
         $complaint = Complaint::find($request->complaintID);
 
-        $officer = auth()->user();
+        $officer = \Illuminate\Support\Facades\Auth::user();
         $date = now()->format('Y-m-d h:i A');
         $newNoteBlock = "--- INVESTIGATION NOTE ---\n";
         $newNoteBlock .= "Date: {$date}\n";
@@ -862,7 +876,6 @@ class ComplaintController extends Controller
                                 'recipient_email' => $officer->email,
                                 'subject'         => $subject,
                                 'sent_status' => 'Sent',
-                        'sent_at' => now(),
                                 'email_type'      => 'Complaint Rejection (Police)',
                                 'sent_at'         => now(),
                                 'created_at'      => now(),

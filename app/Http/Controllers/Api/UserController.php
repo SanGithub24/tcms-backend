@@ -59,9 +59,8 @@ class UserController extends Controller
                 'recipient_email' => $user->email,
                 'subject' => $subject,
                 'sent_status' => 'Sent',
-                        'sent_at' => now(),
-                'email_type' => 'Officer Registration',
                 'sent_at' => now(),
+                'email_type' => 'Officer Registration',
             ]);
         } catch (\Exception $e) {
             Email::create([
@@ -148,6 +147,13 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Tourist not found'
             ], 404);
+        }
+
+        // Security Patch: Verify Ownership (IDOR Protection)
+        if (\Illuminate\Support\Facades\Auth::id() !== (int)$id) {
+            return response()->json([
+                'message' => 'Unauthorized action. You can only update your own profile.'
+            ], 403);
         }
 
         $passwordChanged = false;
